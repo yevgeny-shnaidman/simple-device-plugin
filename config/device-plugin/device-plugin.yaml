@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: system
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: simple-device-plugin
+  labels:
+    app.kubernetes.io/name: simple-device-plugin
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: simple-device-plugin
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: simple-device-plugin
+    spec:
+      priorityClassName: system-node-critical
+      containers:
+      - image: device-plugin:latest
+        args:
+        - "--config=device_plugin_config.yaml"
+        name: simple-device-plugin
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 50m
+            memory: 100Mi
+          limits:
+            cpu: 50m
+            memory: 100Mi
+        ports:
+        - containerPort: 8080
+          name: http
+        securityContext:
+          privileged: true
+        env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+        volumeMounts:
+        - name: device-plugin
+          mountPath: /var/lib/kubelet/device-plugins
+        - name: dev
+          mountPath: /dev
+        - name: device-plugin-config
+          mountPath: /device_plugin_config.yaml
+          subPath: device_plugin_config.yaml
+      volumes:
+      - name: device-plugin
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      - name: dev
+        hostPath:
+          path: /dev
+      - name: device-plugin-config
+        configMap:
+          name: device-plugin-config
+  updateStrategy:
+    type: RollingUpdate

@@ -1,0 +1,7 @@
+resourceName: RESOURCE_NAME
+numberDevicesOnNode: NUMBER_DEVICES
+pluginName: PLUGIN_NAME
+deviceIDPrefix: DEVICE_ID_PREFIX
+annotationPrefix: ANNOTATION_PREFIX
+envPrefix: ENV_PREFIX
+deviceFilePrefix: DEVICE_FILE_PREFIX
