@@ -1,4 +1,5 @@
 EXEC_NAME := simple-device-plugin
+BASE_IMAGE ?= scratch
 GO_FILES ?= $$(find . -name '*.go' -not -path './vendor/*')
 IMG ?= $(REPO):$(TAG)
 KUSTOMIZE_CONFIG_DEFAULT ?= config/default
@@ -13,6 +14,8 @@ ANNOTATION_PREFIX := $(or ${ANNOTATION_PREFIX},)
 ENV_PREFIX := $(or ${ENV_PREFIX},)
 DEVICE_FILE_PREFIX := $(or ${DEVICE_FILE_PREFIX},)
 
+CONTAINER_RUNTIME_COMMAND ?= docker
+
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
 	@if [ ! -f ${KUSTOMIZE} ]; then \
@@ -26,7 +29,10 @@ fmt:
 	go fmt ./...
 
 image: build
-	docker build -t $(IMG) .
+	$(CONTAINER_RUNTIME_COMMAND) build --build-arg BASE_IMAGE=$(BASE_IMAGE) -t $(IMG) .
+
+push:
+	$(CONTAINER_RUNTIME_COMMAND) push $(IMG)
 
 deploy: kustomize
 	cd config/device-plugin && kustomize edit set image device-plugin=$(IMG)
@@ -38,14 +44,14 @@ deploy: kustomize
 		-e 's#ANNOTATION_PREFIX#$(ANNOTATION_PREFIX)#g' \
 		-e 's#ENV_PREFIX#$(ENV_PREFIX)#g' \
 		-e 's#DEVICE_FILE_PREFIX#$(DEVICE_FILE_PREFIX)#g' \
-		config/device-plugin/device_plugin_config_template.yaml > config/device-plugin/device_plugin_config.yaml 
+		config/device-plugin/device_plugin_config_template.yaml > config/device-plugin/device_plugin_config.yaml
 	#$(KUSTOMIZE) build config/default
 	kubectl apply -k config/default
 
-undeploy: 
+undeploy:
 	kubectl delete -k config/default --ignore-not-found=false
 
 clean:
 	rm -f $(EXEC_NAME)
 
-.PHONY: build image clean
+.PHONY: build image push clean
