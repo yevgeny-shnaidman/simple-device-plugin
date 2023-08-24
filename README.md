@@ -23,7 +23,7 @@ kubelet communicates with device plugin using Grpc DevicePluginServer interface 
 this function is called by kubelet to get the status of the devices on the node, their number, their IDs and their health. This data will be propagated
 by kubelet to kkube API server, and will be stored in the extended resources of the node. It will also be used by kube scheduler to decide where to
 schedule a pod, in case it will request the resource.
-The IDs of the devices can be set to any value by the device-plugin, as long as it knows how to correlate them to the actual devices. Those IDs will 
+The IDs of the devices can be set to any value by the device-plugin, as long as it knows how to correlate them to the actual devices. Those IDs will
 be used by the kubelet to decide which device(s) should be allocated to each pod.
 
 
@@ -34,7 +34,7 @@ wants to allocated for the scheduled pod/container. The following action can be 
    in which case the pod/container will fail scheduling
 2) add specific annotations to the response. Those annotation will be set by kubelet on the container using container runtime
 3) add environment variable to the response. Those variable will be added to the container by the kubelet, using container runtime
-4) define mounting of device on the container file-system. The needed volume/mount definitions will be added by kubelet to the container, 
+4) define mounting of device on the container file-system. The needed volume/mount definitions will be added by kubelet to the container,
    using container runtime. It means that Pod does not need to mount /dev host directory, the needed device files will be mounted by kubelet
 
 
@@ -62,12 +62,12 @@ Simple device plugin provides simple plugin implementation that can be configure
                         and the container path will be the same.
 
 ### Makefile commands
-Project is using skipper to run all the Makefile commands:
-- `skipper make build`: build the executable
-- `skipper make image`: create a container image for the device-plugin. It will also run the build stage if needed
-- `skipper make deploy`: will deploy a device-plugin daemonset on the cluster, based on the kubeconfig provided via
+- `make image`: create a container image for the device-plugin. It will also run the build stage if needed
+- `make image-push`: push the container image to a container registry.
+                     **WARNING**: You must set `REPO` or `IMG` to point to a registry you have write access to.
+- `make deploy`: will deploy a device-plugin daemonset on the cluster, based on the kubeconfig provided via
                          KUBECONFIG variable. All the configuration parameters mentioned above can be passed to this command.
-                         Example: `NAMESPACE=<some namespace> RESOURCE_NAME=<some resource name> skipper make deploy` will
+                         Example: `NAMESPACE=<some namespace> RESOURCE_NAME=<some resource name> make deploy` will
                          deploy device plugin into namespace <some namespace> and it will report <some resource name> devices
                          to kubelet
-- `skipper make undeploy`: will remove the deployment of the device plugin from the cluster. 
+- `make undeploy`: will remove the deployment of the device plugin from the cluster.
