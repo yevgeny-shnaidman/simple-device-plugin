@@ -1,18 +1,20 @@
 EXEC_NAME := simple-device-plugin
 BASE_IMAGE ?= scratch
 GO_FILES ?= $$(find . -name '*.go' -not -path './vendor/*')
+REPO ?= quay.io/yshnaidm/simple-device-plugin
+TAG ?= latest
 IMG ?= $(REPO):$(TAG)
 KUSTOMIZE_CONFIG_DEFAULT ?= config/default
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 
-NAMESPACE := $(or ${NAMESPACE},simple-device-plugin)
-RESOURCE_NAME := $(or ${RESOURCE_NAME},example.com/simple-device)
-NUMBER_DEVICES := $(or ${NUMBER_DEVICES},2)
-PLUGIN_NAME := $(or ${PLUGIN_NAME},simple-device-plugin)
-DEVICE_ID_PREFIX := $(or ${DEVICE_ID_PREFIX},simple-device)
-ANNOTATION_PREFIX := $(or ${ANNOTATION_PREFIX},)
-ENV_PREFIX := $(or ${ENV_PREFIX},)
-DEVICE_FILE_PREFIX := $(or ${DEVICE_FILE_PREFIX},)
+NAMESPACE ?= simple-device-plugin
+RESOURCE_NAME ?= example.com/simple-device
+NUMBER_DEVICES ?= 2
+PLUGIN_NAME ?= simple-device-plugin
+DEVICE_ID_PREFIX ?= simple-device
+ANNOTATION_PREFIX ?= ''
+ENV_PREFIX ?= ''
+DEVICE_FILE_PREFIX ?= ''
 
 CONTAINER_RUNTIME_COMMAND ?= docker
 
@@ -28,15 +30,17 @@ build:
 fmt:
 	go fmt ./...
 
+.PHONY: image
 image: build
 	$(CONTAINER_RUNTIME_COMMAND) build --build-arg BASE_IMAGE=$(BASE_IMAGE) -t $(IMG) .
 
-push:
+.PHONY: image-push
+image-push:
 	$(CONTAINER_RUNTIME_COMMAND) push $(IMG)
 
 deploy: kustomize
-	cd config/device-plugin && kustomize edit set image device-plugin=$(IMG)
-	cd config/default && kustomize edit set namespace $(NAMESPACE)
+	cd config/device-plugin && $(KUSTOMIZE) edit set image device-plugin=$(IMG)
+	cd config/default && $(KUSTOMIZE) edit set namespace $(NAMESPACE)
 	sed -e 's#RESOURCE_NAME#$(RESOURCE_NAME)#g' \
 		-e 's#NUMBER_DEVICES#$(NUMBER_DEVICES)#g' \
 	       	-e 's#PLUGIN_NAME#$(PLUGIN_NAME)#g' \
