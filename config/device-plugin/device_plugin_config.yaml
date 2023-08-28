@@ -1,7 +1,0 @@
-resourceName: nvidia.com/gpu
-numberDevicesOnNode: 3
-pluginName: simple-device-plugin
-deviceIDPrefix: gpu-device
-annotationPrefix: 
-envPrefix: GPU_DEVICE
-deviceFilePrefix: 

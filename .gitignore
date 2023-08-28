@@ -1,2 +1,4 @@
 bin/
+tmp/
 simple-device-plugin
+config/device-plugin/device_plugin_config.yaml
